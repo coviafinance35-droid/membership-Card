@@ -7,7 +7,7 @@ import type {
 export class CustomFulfillmentProvider implements FulfillmentProvider {
   id = "custom";
   private get base() {
-    const url = process.env.FULFILLMENT_API_URL;
+    const url = process.env.PRODIGI_API ?? process.env.FULFILLMENT_API_URL;
     const key = process.env.FULFILLMENT_API_KEY;
     if (!url || !key) throw new Error("Fulfillment provider is not configured.");
     return { url: url.replace(/\/$/, ""), key };

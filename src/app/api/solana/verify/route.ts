@@ -3,7 +3,15 @@ import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import { SOLANA_TREASURY } from "@/lib/solana";
 
-const rpcUrl = () => `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`;
+const rpcUrl = () => `https://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(process.env.HELIUS_API_KEY ?? "")}`;
+
+async function heliusRpc(method: string, params: unknown[], id: number) {
+  const response = await fetch(rpcUrl(), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id, method, params }), cache: "no-store" });
+  if (!response.ok) throw new Error(`Helius RPC returned ${response.status}.`);
+  const payload = await response.json();
+  if (payload.error) throw new Error("Helius RPC rejected the request.");
+  return payload.result;
+}
 
 export async function POST(req: Request) {
   try {
@@ -13,11 +21,9 @@ export async function POST(req: Request) {
     const rows = await db.execute(sql`SELECT id, total_cents, solana_reference, solana_amount_lamports, payment_status FROM public.shipment_orders WHERE id = ${shipment_id}`);
     const order = rows.rows[0] as { id: string; total_cents: number; solana_reference: string | null; solana_amount_lamports: number | null; payment_status: string } | undefined;
     if (!order || !order.solana_reference || order.payment_status !== "pending") return NextResponse.json({ ok: false, error: "Payment intent is unavailable." }, { status: 400 });
-    const signaturesResponse = await fetch(rpcUrl(), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "getSignaturesForAddress", params: [order.solana_reference, { limit: 20 }] }) });
-    const signatures = (await signaturesResponse.json())?.result as Array<{ signature: string; err: unknown }> | undefined;
+    const signatures = await heliusRpc("getSignaturesForAddress", [order.solana_reference, { limit: 20 }], 1) as Array<{ signature: string; err: unknown }> | undefined;
     if (!signatures?.some((item) => item.signature === signature && !item.err)) return NextResponse.json({ ok: false, error: "Payment signature was not found for this payment reference." }, { status: 400 });
-    const txResponse = await fetch(rpcUrl(), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "getTransaction", params: [signature, { encoding: "jsonParsed", commitment: "finalized", maxSupportedTransactionVersion: 0 }] }) });
-    const transaction = (await txResponse.json())?.result;
+    const transaction = await heliusRpc("getTransaction", [signature, { encoding: "jsonParsed", commitment: "finalized", maxSupportedTransactionVersion: 0 }], 2);
     if (!transaction?.meta || transaction.meta.err || !transaction.blockTime) return NextResponse.json({ ok: false, error: "Payment is not finalized." }, { status: 400 });
     const keys = transaction.transaction.message.accountKeys as Array<{ pubkey: string; signer?: boolean }>;
     const accountKeySet = new Set(keys.map((key) => key.pubkey));

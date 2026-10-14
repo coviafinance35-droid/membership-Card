@@ -1,0 +1,11 @@
+{
+  "name": "MemberCard AI",
+  "short_name": "MemberCard",
+  "description": "Design and order beautiful membership cards.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0a10",
+  "theme_color": "#0b0a10",
+  "orientation": "portrait-primary",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
