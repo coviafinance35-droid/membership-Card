@@ -3,7 +3,11 @@ import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import { SOLANA_TREASURY } from "@/lib/solana";
 
-const rpcUrl = () => `https://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(process.env.HELIUS_API_KEY ?? "")}`;
+const rpcUrl = () => {
+  const configured = process.env.HELIUS_RPC;
+  if (configured) return configured.includes("api-key=") || configured.includes("apiKey=") ? configured : `${configured}${configured.includes("?") ? "&" : "?"}api-key=${encodeURIComponent(process.env.HELIUS_API ?? "")}`;
+  return `https://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(process.env.HELIUS_API ?? "")}`;
+};
 
 async function heliusRpc(method: string, params: unknown[], id: number) {
   const response = await fetch(rpcUrl(), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id, method, params }), cache: "no-store" });
@@ -17,7 +21,7 @@ export async function POST(req: Request) {
   try {
     const { shipment_id, signature, email } = await req.json();
     if (!shipment_id || typeof signature !== "string" || signature.length < 80 || typeof email !== "string" || !email.includes("@")) return NextResponse.json({ ok: false, error: "A valid payment signature is required." }, { status: 400 });
-    if (!process.env.HELIUS_API_KEY) return NextResponse.json({ ok: false, error: "Solana verification is not configured." }, { status: 503 });
+    if (!process.env.HELIUS_API && !process.env.HELIUS_RPC) return NextResponse.json({ ok: false, error: "Solana verification is not configured." }, { status: 503 });
     const rows = await db.execute(sql`SELECT id, total_cents, solana_reference, solana_amount_lamports, payment_status FROM public.shipment_orders WHERE id = ${shipment_id}`);
     const order = rows.rows[0] as { id: string; total_cents: number; solana_reference: string | null; solana_amount_lamports: number | null; payment_status: string } | undefined;
     if (!order || !order.solana_reference || order.payment_status !== "pending") return NextResponse.json({ ok: false, error: "Payment intent is unavailable." }, { status: 400 });
