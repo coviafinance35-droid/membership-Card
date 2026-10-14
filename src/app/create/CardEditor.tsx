@@ -5,6 +5,7 @@ import { ArrowLeft, Check, Download, Package, Share2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MembershipCard } from "@/components/card/MembershipCard";
+import FabricDesigner from "./FabricDesigner";
 import type { CardDraft } from "@/lib/types";
 
 const themes = [
@@ -55,7 +56,7 @@ export function CardEditor({ initial }: { initial: CardDraft }) {
   return <main className="min-h-dvh bg-background">
     <header className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-5"><Link href="/" className="text-muted-foreground"><ArrowLeft className="size-5" /></Link><span className="font-display text-lg">Create your membership card</span><span className="ml-auto text-xs text-muted-foreground">01 Design <span className="mx-2">—</span> 02 Review <span className="mx-2">—</span> 03 Delivery</span></header>
     <div className="mx-auto grid max-w-6xl gap-6 px-5 pb-12 lg:grid-cols-[1.35fr_0.85fr]">
-      <section className="rounded-2xl border bg-card p-5 shadow-soft md:p-7"><p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Card preview</p><h1 className="mt-2 font-display text-3xl">Make it unmistakably yours.</h1><div data-card-preview className="mt-7"><MembershipCard model={model} className="mx-auto max-w-[620px]" /></div>
+      <section className="rounded-2xl border bg-card p-5 shadow-soft md:p-7"><p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Card preview</p><h1 className="mt-2 font-display text-3xl">Make it unmistakably yours.</h1><div data-card-preview className="mt-7"><MembershipCard model={model} className="mx-auto max-w-[620px]" /></div><div className="mt-6"><FabricDesigner onChange={() => setSavedId(null)} /></div>
         <div className="mt-6 grid grid-cols-3 gap-3">{themes.map((item) => <button key={item.name} type="button" onClick={() => updateDesign(item.value)} className={`rounded-xl border p-2 text-left ${theme.name === item.name ? "border-primary ring-2 ring-primary/20" : "border-border"}`}><div className="cr80 rounded-lg" style={{ background: item.value }} /><span className="mt-2 block text-center text-xs">{item.name}</span></button>)}</div>
       </section>
       <aside className="space-y-5"><section className="rounded-2xl border bg-card p-5 shadow-soft"><p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Card information</p><div className="mt-4 grid gap-3">{[["Organization", "organizationName", card.organizationName], ["Member name", "memberName", card.memberName], ["Membership level", "membershipType", card.membershipType], ["Membership ID", "memberNumber", card.memberNumber]].map(([label, key, value]) => <label key={key} className="grid gap-1.5 text-sm"><span className="text-muted-foreground">{label}</span><input value={value} onChange={(event) => update({ [key]: event.target.value } as Partial<CardDraft>)} className="h-11 rounded-lg border bg-background px-3 outline-none focus:ring-2 focus:ring-ring" /></label>)}<label className="grid gap-1.5 text-sm"><span className="text-muted-foreground">Expiry date</span><input type="date" value={card.expiration ?? ""} onChange={(event) => update({ expiration: event.target.value })} className="h-11 rounded-lg border bg-background px-3 outline-none focus:ring-2 focus:ring-ring" /></label></div></section>
