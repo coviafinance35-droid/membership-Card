@@ -17,8 +17,8 @@ export const shippingSchema = z.object({
 
 export type ShippingInput = z.infer<typeof shippingSchema>;
 export const SHIPPING_SERVICES = {
-  standard: { label: "Standard delivery", description: "2–5 business days", amount_cents: 666, estimated_days: 5 },
-  rush: { label: "Priority delivery", description: "Under 24 hours", amount_cents: 1800, estimated_days: 1 },
+  standard: { label: "Economy delivery", description: "2–3 weeks", amount_cents: 1000, estimated_days: 21 },
+  rush: { label: "Express delivery", description: "24–48 hours", amount_cents: 1800, estimated_days: 2 },
 } as const;
 export type ShippingService = keyof typeof SHIPPING_SERVICES;
 export type ShipmentStatus = "pending" | "payment_confirmed" | "processing" | "shipped" | "in_transit" | "delivered" | "failed" | "cancelled" | "refunded";
