@@ -4,7 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("PRISMA_DATABASE_URL")
+  // Prisma and the app share the same Neon database; this is not a second database.
+  url = env("DATABASE_URL")
 }
 
 model MembershipCard {
@@ -25,56 +26,56 @@ model MembershipCard {
 }
 
 model ShippingConfig {
-  id                         Int      @id @default(1)
-  baseFeeCents               Int      @default(499) @map("base_fee_cents")
-  cardFeeCents               Int      @default(0) @map("card_fee_cents")
+  id                          Int      @id @default(1)
+  baseFeeCents                Int      @default(499) @map("base_fee_cents")
+  cardFeeCents                Int      @default(0) @map("card_fee_cents")
   internationalSurchargeCents Int      @default(0) @map("international_surcharge_cents")
-  updatedAt                  DateTime @updatedAt @map("updated_at")
+  updatedAt                   DateTime @updatedAt @map("updated_at")
 
   @@map("shipping_config")
 }
 
 model ShipmentOrder {
-  id                   String            @id @default(uuid()) @db.Uuid
-  userId               String            @map("user_id")
-  cardId               String            @map("card_id") @db.Uuid
-  cardSnapshot         Json              @map("card_snapshot")
-  recipientName        String            @map("recipient_name")
-  email                String
-  phone                String?
-  street               String
-  unit                 String?
-  city                 String
-  state                String?
-  postalCode           String            @map("postal_code")
-  country              String            @default("US")
-  shippingCostCents    Int               @map("shipping_cost_cents")
-  deliveryMethod       String            @default("standard") @map("delivery_method")
-  deliveryFeeCents     Int               @default(1000) @map("delivery_fee_cents")
-  deliveryWindow       String            @default("2–3 weeks") @map("delivery_window")
-  totalCents           Int               @map("total_cents")
-  idempotencyKey       String            @unique @map("idempotency_key")
-  paymentStatus        String            @default("pending") @map("payment_status")
-  fulfillmentStatus    String            @default("pending") @map("fulfillment_status")
-  providerOrderId      String?           @map("provider_order_id")
-  trackingNumber       String?           @map("tracking_number")
-  trackingUrl          String?           @map("tracking_url")
-  estimatedDelivery    DateTime?         @map("estimated_delivery")
-  errorMessage         String?           @map("error_message")
-  solanaReference      String?           @unique @map("solana_reference")
-  solanaAmountLamports BigInt?           @map("solana_amount_lamports")
-  solanaUsdRate        Decimal?          @map("solana_usd_rate") @db.Decimal(12, 4)
-  paymentProvider      String?           @map("payment_provider")
-  solanaSignature      String?           @unique @map("solana_signature")
-  usdcAmount           Int?              @map("usdc_amount")
-  stripeSessionId      String?           @unique @map("stripe_session_id")
-  stripePaymentIntentId String?          @map("stripe_payment_intent_id")
-  paidAt               DateTime?         @map("paid_at")
-  createdAt            DateTime          @default(now()) @map("created_at")
-  updatedAt            DateTime          @updatedAt @map("updated_at")
-  card                 MembershipCard    @relation(fields: [cardId], references: [id])
-  walletDeposits      WalletDeposit[]
-  fulfillmentEvents   FulfillmentEvent[]
+  id                    String             @id @default(uuid()) @db.Uuid
+  userId                String             @map("user_id")
+  cardId                String             @map("card_id") @db.Uuid
+  cardSnapshot          Json               @map("card_snapshot")
+  recipientName         String             @map("recipient_name")
+  email                 String
+  phone                 String?
+  street                String
+  unit                  String?
+  city                  String
+  state                 String?
+  postalCode            String             @map("postal_code")
+  country               String             @default("US")
+  shippingCostCents     Int                @map("shipping_cost_cents")
+  deliveryMethod        String             @default("standard") @map("delivery_method")
+  deliveryFeeCents      Int                @default(1000) @map("delivery_fee_cents")
+  deliveryWindow        String             @default("2–3 weeks") @map("delivery_window")
+  totalCents            Int                @map("total_cents")
+  idempotencyKey        String             @unique @map("idempotency_key")
+  paymentStatus         String             @default("pending") @map("payment_status")
+  fulfillmentStatus     String             @default("pending") @map("fulfillment_status")
+  providerOrderId       String?            @map("provider_order_id")
+  trackingNumber        String?            @map("tracking_number")
+  trackingUrl           String?            @map("tracking_url")
+  estimatedDelivery     DateTime?          @map("estimated_delivery")
+  errorMessage          String?            @map("error_message")
+  solanaReference       String?            @unique @map("solana_reference")
+  solanaAmountLamports  BigInt?            @map("solana_amount_lamports")
+  solanaUsdRate         Decimal?           @map("solana_usd_rate") @db.Decimal(12, 4)
+  paymentProvider       String?            @map("payment_provider")
+  solanaSignature       String?            @unique @map("solana_signature")
+  usdcAmount            Int?               @map("usdc_amount")
+  stripeSessionId       String?            @unique @map("stripe_session_id")
+  stripePaymentIntentId String?            @map("stripe_payment_intent_id")
+  paidAt                DateTime?          @map("paid_at")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
+  card                  MembershipCard     @relation(fields: [cardId], references: [id])
+  walletDeposits        WalletDeposit[]
+  fulfillmentEvents     FulfillmentEvent[]
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([paymentStatus, createdAt(sort: Desc)])
@@ -84,17 +85,17 @@ model ShipmentOrder {
 }
 
 model WalletDeposit {
-  id            String        @id @default(uuid()) @db.Uuid
-  userId        String        @map("user_id")
-  orderId       String?       @map("order_id") @db.Uuid
-  asset         String
-  amountAtomic  Decimal       @map("amount_atomic") @db.Decimal(30, 0)
-  amountUsdCents Int          @default(0) @map("amount_usd_cents")
-  signature     String        @unique
-  status        String        @default("pending")
-  confirmedAt   DateTime?     @map("confirmed_at")
-  createdAt     DateTime      @default(now()) @map("created_at")
-  order         ShipmentOrder? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  id             String         @id @default(uuid()) @db.Uuid
+  userId         String         @map("user_id")
+  orderId        String?        @map("order_id") @db.Uuid
+  asset          String
+  amountAtomic   Decimal        @map("amount_atomic") @db.Decimal(30, 0)
+  amountUsdCents Int            @default(0) @map("amount_usd_cents")
+  signature      String         @unique
+  status         String         @default("pending")
+  confirmedAt    DateTime?      @map("confirmed_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  order          ShipmentOrder? @relation(fields: [orderId], references: [id], onDelete: SetNull)
 
   @@index([userId, status, createdAt(sort: Desc)])
   @@index([orderId])
@@ -116,14 +117,14 @@ model CardDesign {
 }
 
 model FulfillmentEvent {
-  id          String        @id @default(uuid()) @db.Uuid
-  shipmentId  String        @map("shipment_id") @db.Uuid
-  eventType   String        @map("event_type")
-  status      String
-  payload     Json?
-  errorMessage String?      @map("error_message")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  shipment    ShipmentOrder @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  id           String        @id @default(uuid()) @db.Uuid
+  shipmentId   String        @map("shipment_id") @db.Uuid
+  eventType    String        @map("event_type")
+  status       String
+  payload      Json?
+  errorMessage String?       @map("error_message")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  shipment     ShipmentOrder @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
   @@index([shipmentId, createdAt(sort: Desc)])
   @@map("fulfillment_events")

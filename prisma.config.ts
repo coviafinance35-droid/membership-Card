@@ -1,10 +1,7 @@
 import { definePrismaConfig } from "prisma/config";
+import { defineConfig as orm } from "@prisma/orm-postgres/config";
 
 export default definePrismaConfig({
-  orm: {
-    adapter: { provider: "prisma-postgres" },
-    family: { provider: "postgresql" },
-    target: { provider: "local" },
-  },
+  orm: orm({ contract: "./prisma/schema.prisma" }),
   skills: { agents: [] },
 });
