@@ -11,7 +11,7 @@ const features = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-dvh overflow-hidden bg-background">
+    <div className="min-h-dvh overflow-hidden bg-background bg-grid">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3"><span className="grid size-9 place-items-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground">M</span><span className="font-display text-xl">MemberCard AI</span></Link>
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex"><Link href="/app" className="hover:text-foreground">Dashboard</Link><Link href="/shipments" className="hover:text-foreground">Delivery</Link><Link href="/create" className="hover:text-foreground">Card studio</Link></nav>

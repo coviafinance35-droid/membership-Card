@@ -8,8 +8,8 @@
     --foreground: 222 22% 10%;
     --card: 40 40% 99%;
     --card-foreground: 222 22% 10%;
-    --primary: 188 52% 23%;
-    --primary-foreground: 40 33% 97%;
+    --primary: 264 73% 52%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 40 18% 92%;
     --secondary-foreground: 222 22% 14%;
     --muted: 40 14% 92%;
@@ -45,6 +45,9 @@
   * { @apply border-border; }
   body { @apply bg-background text-foreground; }
   h1, h2, h3 { font-family: var(--font-display), Georgia, serif; text-wrap: balance; }
+  ::selection { background: hsl(var(--primary) / 0.2); }
+  .bg-grid { background-image: linear-gradient(hsl(var(--border) / 0.42) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border) / 0.42) 1px, transparent 1px); background-size: 48px 48px; background-position: center top; }
+  .bg-grid > * { position: relative; }
   button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
 }
 @layer utilities {
