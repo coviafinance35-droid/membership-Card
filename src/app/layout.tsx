@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   applicationName: "MemberCard AI",
   appleWebApp: { capable: true, title: "MemberCard AI", statusBarStyle: "black-translucent" },
+  icons: { icon: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/BA602CFE-A239-420F-B490-C286F0DAE5E2-Lk6BtXh1Yfl0xxnTMg79WNk2U85NEp.png", apple: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/BA602CFE-A239-420F-B490-C286F0DAE5E2-Lk6BtXh1Yfl0xxnTMg79WNk2U85NEp.png" },
 };
 
 export const viewport: Viewport = {
