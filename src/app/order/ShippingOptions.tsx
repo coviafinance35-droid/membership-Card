@@ -1,0 +1,11 @@
+"use client";
+
+import { SHIPPING_SERVICES, type ShippingService } from "@/lib/shipping";
+
+export function ShippingOptions({ value, onChange }: { value: ShippingService; onChange: (value: ShippingService) => void }) {
+  return <section className="rounded-2xl border border-border bg-card p-5 shadow-sm"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Delivery speed</p><h2 className="mt-1 font-display text-xl">Choose your arrival window</h2></div><span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">Tracked</span></div><div className="mt-4 grid gap-3 sm:grid-cols-2">{(Object.entries(SHIPPING_SERVICES) as Array<[ShippingService, (typeof SHIPPING_SERVICES)[ShippingService]]>).map(([key, option]) => <button type="button" key={key} onClick={() => onChange(key)} className={`rounded-xl border p-4 text-left transition ${value === key ? "border-primary bg-primary/10 ring-1 ring-primary" : "border-border bg-background hover:border-primary/50"}`}><div className="flex items-center justify-between gap-3"><span className="font-medium">{option.label}</span><span className="font-display text-lg">${(option.amount_cents / 100).toFixed(0)}</span></div><p className="mt-1 text-sm text-muted-foreground">{option.description}</p><p className="mt-3 text-xs text-muted-foreground">Tracking included · {option.estimated_days} day estimate</p></button>)}</div></section>;
+}
+
+export function WalletNotice() {
+  return <aside className="rounded-2xl border border-primary/30 bg-primary/10 p-5"><p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Wallet funding</p><h2 className="mt-1 font-display text-xl">Deposit before shipping</h2><p className="mt-2 text-sm text-muted-foreground">Send SOL or USDC to the secure MemberCard wallet before continuing. Payments are monitored on Solana mainnet.</p><div className="mt-4 rounded-xl border border-border bg-background/70 p-3"><p className="text-xs text-muted-foreground">Deposit address</p><p className="mt-1 break-all font-mono text-xs">GfoFdkeJiPrYZuCgTLPxgWdWmh8NoB4QCc2CjhLfspFX</p></div><p className="mt-3 text-xs text-muted-foreground">Your deposit is matched to one shipment order after on-chain confirmation.</p></aside>;
+}

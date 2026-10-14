@@ -54,6 +54,20 @@ create table if not exists public.shipment_orders (
 create index if not exists shipment_orders_user_idx on public.shipment_orders (user_id, created_at desc);
 create index if not exists shipment_orders_status_idx on public.shipment_orders (payment_status, created_at desc);
 
+create table if not exists public.wallet_deposits (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null,
+  order_id uuid references public.shipment_orders(id) on delete set null,
+  asset text not null check (asset in ('SOL', 'USDC')),
+  amount_atomic numeric(30,0) not null,
+  amount_usd_cents integer not null default 0,
+  signature text not null unique,
+  status text not null default 'pending' check (status in ('pending','confirmed','rejected')),
+  confirmed_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create index if not exists wallet_deposits_user_idx on public.wallet_deposits (user_id, status, created_at desc);
+
 create table if not exists public.card_designs (
   id uuid primary key default gen_random_uuid(),
   card_id uuid references public.membership_cards(id) on delete cascade,
