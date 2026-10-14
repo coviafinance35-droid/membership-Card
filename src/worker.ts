@@ -4,7 +4,8 @@ import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import { getFulfillmentProvider } from "@/lib/fulfillment";
 
-const redisUrl = process.env.REDIS_URL_3 ?? process.env.REDIS_URL;
+const configuredRedisUrl = process.env.REDIS_URL_3 ?? process.env.REDIS_URL;
+const redisUrl = configuredRedisUrl && !configuredRedisUrl.startsWith("process.env.") ? configuredRedisUrl : undefined;
 if (!redisUrl) throw new Error("REDIS_URL_3 is required for the worker.");
 const connection = new IORedis(redisUrl, { maxRetriesPerRequest: null, enableReadyCheck: false });
 

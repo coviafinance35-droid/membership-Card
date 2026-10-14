@@ -19,12 +19,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Detect project files
-        run: |
-          echo "Repository checked out."
-          find . -maxdepth 3 \
-            \( -name package.json \
-            -o -name pnpm-lock.yaml \
-            -o -name yarn.lock \
-            -o -name package-lock.json \) \
-            -not -path "./node_modules/*"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check Prisma CLI and schema
+        run: pnpm exec prisma --version && pnpm run db:validate
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build

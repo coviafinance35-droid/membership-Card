@@ -37,6 +37,9 @@ create table if not exists public.shipment_orders (
   postal_code text not null,
   country text not null default 'US',
   shipping_cost_cents integer not null,
+  delivery_method text not null default 'standard',
+  delivery_fee_cents integer not null default 1000,
+  delivery_window text not null default '2–3 weeks',
   total_cents integer not null,
   idempotency_key text not null unique,
   payment_status text not null default 'pending' check (payment_status in ('pending','paid','failed')),
@@ -80,4 +83,7 @@ create table if not exists public.card_designs (
 create index if not exists card_designs_owner_idx on public.card_designs (owner_id, updated_at desc);
 
 alter table public.shipment_orders add column if not exists usdc_amount integer;
+alter table public.shipment_orders add column if not exists delivery_method text not null default 'standard';
+alter table public.shipment_orders add column if not exists delivery_fee_cents integer not null default 1000;
+alter table public.shipment_orders add column if not exists delivery_window text not null default '2–3 weeks';
 create unique index if not exists shipment_orders_payment_signature_idx on public.shipment_orders (solana_signature) where solana_signature is not null;
