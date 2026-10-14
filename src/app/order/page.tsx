@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,21 @@ type FormState = { full_name: string; street: string; unit: string; city: string
 const empty: FormState = { full_name: "", street: "", unit: "", city: "", state: "", zip: "", country: "US", phone: "", email: "" };
 
 export default function OrderPage() {
-  const [card, setCard] = useState<CardDraft | null>(null);
+  const [card, setCard] = useState<CardDraft | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const value = window.sessionStorage.getItem("mc_card");
+      return value ? JSON.parse(value) as CardDraft : null;
+    } catch {
+      return null;
+    }
+  });
   const [form, setForm] = useState<FormState>(empty);
   const [service, setService] = useState<"standard" | "rush">("standard");
   const [step, setStep] = useState<"details" | "payment" | "success">("details");
   const [shipmentId, setShipmentId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  useEffect(() => { try { const value = sessionStorage.getItem("mc_card"); if (value) setCard(JSON.parse(value)); } catch { setError("Your card preview could not be loaded."); } }, []);
   const valid = useMemo(() => Boolean(form.full_name && form.street && form.city && form.zip && form.country === "US"), [form]);
   const update = (key: keyof FormState, value: string) => setForm((current) => ({ ...current, [key]: value }));
   async function createShipment() {

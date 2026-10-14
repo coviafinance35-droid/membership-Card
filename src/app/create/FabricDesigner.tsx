@@ -18,13 +18,13 @@ export function FabricDesigner({ initial, onChange }: Props) {
     const canvas = new Canvas(elementRef.current, { width: 760, height: 480, backgroundColor: "#0e1828", preserveObjectStacking: true });
     canvasRef.current = canvas;
     if (initial) {
-      try { canvas.loadFromJSON(JSON.parse(initial)).then(() => { canvas.requestRenderAll(); setReady(true); }); } catch { setReady(true); }
+      try { canvas.loadFromJSON(JSON.parse(initial)).then(() => { canvas.requestRenderAll(); setReady(true); }).catch(() => setReady(true)); } catch { queueMicrotask(() => setReady(true)); }
     } else {
       canvas.add(new Rect({ left: 24, top: 24, width: 712, height: 432, rx: 24, ry: 24, fill: "#172943", stroke: "#65d5c8", strokeWidth: 2 }));
       canvas.add(new Textbox("YOUR FAN CARD", { left: 58, top: 64, width: 420, fontSize: 34, fontFamily: "Arial", fontWeight: "700", fill: "#f7fafc" }));
       canvas.add(new Textbox("Drag, resize, and rotate every layer", { left: 60, top: 118, width: 430, fontSize: 16, fontFamily: "Arial", fill: "#a9b8cf" }));
       canvas.add(new Textbox("MEMBER  /  2026", { left: 60, top: 382, width: 300, fontSize: 15, fontFamily: "monospace", fill: "#65d5c8" }));
-      canvas.requestRenderAll(); setReady(true);
+      canvas.requestRenderAll(); queueMicrotask(() => setReady(true));
     }
     const save = () => onChange?.(JSON.stringify(canvas.toJSON()));
     canvas.on("object:modified", save);
