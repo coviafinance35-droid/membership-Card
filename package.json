@@ -7,9 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "db:push": "psql \"$PRISMA_DATABASE_URL\" -f sql/schema.sql",
-    "db:generate": "prisma generate",
-    "db:validate": "prisma validate",
+    "db:push": "prisma db update --db \"$PRISMA_DATABASE_URL\"",
+    "db:generate": "prisma contract emit",
+    "db:validate": "prisma contract print",
     "worker": "tsx src/worker.ts"
   },
   "dependencies": {
