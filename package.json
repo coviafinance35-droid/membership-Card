@@ -10,6 +10,7 @@
     "db:push": "prisma db update --db \"$PRISMA_DATABASE_URL\"",
     "db:generate": "prisma contract emit",
     "db:validate": "prisma contract print",
+    "db:verify": "prisma db verify --db \"$PRISMA_DATABASE_URL\"",
     "worker": "tsx src/worker.ts"
   },
   "dependencies": {
