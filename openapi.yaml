@@ -1,0 +1,191 @@
+openapi: 3.0.1
+info:
+  title: Order Creation API
+  description: >
+    Creates a new order associated with a specified account ID.
+    This API specification does not require an API key or JWT bearer token.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+tags:
+  - name: Orders
+    description: Order creation and management
+paths:
+  /accounts/{accountId}/orders:
+    post:
+      summary: Create a new order
+      operationId: createOrder
+      description: >
+        Creates a new order associated with the specified account ID.
+        No API key or JWT bearer token is required by this API contract.
+      tags: [Orders]
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          description: Unique identifier of the account.
+          schema:
+            type: string
+            minLength: 1
+          example: account-123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isDraft:
+                  type: boolean
+                  default: false
+                reference:
+                  type: string
+                carrierServiceId:
+                  type: string
+                  default: lpf_standard
+                shipTo:
+                  $ref: '#/components/schemas/Address'
+                products:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OrderItem'
+                groups:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OrderItem'
+              required: [shipTo]
+      responses:
+        '200':
+          description: Order created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, orderId]
+                properties:
+                  success:
+                    type: boolean
+                  orderId:
+                    type: string
+                    format: uuid
+        '400':
+          description: Bad request or invalid input.
+        '404':
+          description: Account not found.
+        '500':
+          description: Internal server error.
+components:
+  schemas:
+    OrderItem:
+      type: object
+      required: [quantity, modelId]
+      properties:
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+        modelId:
+          type: string
+          enum: [pvccard_white, mifare1k_pvccard_white, ntag213_pvccard_white, ntag216_pvccard_white, ntag424_pvccard_white, ntag424_woodcard]
+        metadata:
+          type: object
+          additionalProperties: true
+        packagingId:
+          type: string
+        printingVisuals:
+          type: array
+          items:
+            type: string
+            format: uuid
+        nfc:
+          oneOf:
+            - $ref: '#/components/schemas/NFC'
+            - type: array
+              items:
+                $ref: '#/components/schemas/NFC'
+    NFC:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [empty, uri, text, dynamic]
+        content:
+          type: string
+        dynamic:
+          type: object
+          properties:
+            baseUrl:
+              type: string
+              format: uri
+            records:
+              type: object
+              properties:
+                recordId:
+                  type: integer
+                publicKey:
+                  type: string
+                  minLength: 32
+                  maxLength: 32
+                privateKey:
+                  type: string
+                  minLength: 32
+                  maxLength: 32
+                  writeOnly: true
+        options:
+          type: object
+          properties:
+            lock:
+              type: boolean
+              default: false
+            uid:
+              type: boolean
+    Address:
+      type: object
+      required: [name, phone, email]
+      properties:
+        id:
+          type: string
+          nullable: true
+        name:
+          type: string
+          maxLength: 38
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        address:
+          type: object
+          required: [addressLine1, city, postcode, countryCode]
+          properties:
+            addressLine1:
+              type: string
+              maxLength: 38
+            addressLine2:
+              type: string
+              nullable: true
+              maxLength: 38
+            city:
+              type: string
+              maxLength: 35
+            postcode:
+              type: string
+            countryCode:
+              type: string
+              minLength: 2
+              maxLength: 2
+              pattern: '^[A-Z]{2}$'
+        servicePoint:
+          type: object
+          required: [id, country]
+          properties:
+            id:
+              type: string
+            country:
+              type: string
+              minLength: 2
+              maxLength: 2
+              pattern: '^[A-Z]{2}$'
+        
+      
