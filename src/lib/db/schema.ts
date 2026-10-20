@@ -56,7 +56,6 @@ export const shipmentOrders = pgTable("shipment_orders", {
   amount: numeric("amount", { precision: 30, scale: 9 }),
   token: text("token"),
   usdcAmount: integer("usdc_amount"),
-  stripeSessionId: text("stripe_session_id").unique(),
   paidAt: timestamp("paid_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
