@@ -18,6 +18,7 @@ Card delivery uses Neon for shipment state and Solana transaction verification b
 - Next.js 16 (App Router) + TypeScript + Tailwind
 - Groq AI (`llama-3.3-70b-versatile`) with tool calling
 - Solana Pay with Helius transaction verification
+- x402 Solana payment SDKs for HTTP-native, agent-friendly payment flows
 - Custom PVC fulfillment provider (`FULFILLMENT_API_URL` + `FULFILLMENT_API_KEY`)
 
 ## Setup
@@ -36,13 +37,25 @@ Without `GROQ_API_KEY`, the create flow still walks the same questions and gener
 - `PAYMENT_PROVIDER=solana` — default on-chain payment flow; set `stripe` only for an optional fiat fallback
 - `HELIUS_API` or `HELIUS_RPC` — server-side Solana mainnet transaction verification
 - `SOLANA_TREASURY` — receiving wallet for card payments
-- `FULFILLMENT_PROVIDER=karrio
-KARRIO_API_URL=https://your-karrio-host
-KARRIO_API_KEY=your-karrio-api-key` — required for production fulfillment
+- `FULFILLMENT_PROVIDER=karrio` — use the self-hosted Karrio adapter
+- `KARRIO_API_URL=https://your-karrio-host` — self-hosted Karrio base URL
+- `KARRIO_API_KEY=your-karrio-api-key` — required for production fulfillment
 - `FULFILLMENT_API_URL` and `FULFILLMENT_API_KEY` — server-only provider credentials
 - `FULFILLMENT_PROVIDER=mock` plus `FULFILLMENT_TEST_MODE=true` — explicit test-only mode
 
 Shipping is priced from the configured shipping data; a real fulfillment provider account/API is still required before orders can be submitted.
+
+## Agent payments
+
+This project includes the Solana x402 SDK packages for building HTTP-native payment challenges alongside the existing Solana Pay checkout. The `pay` CLI can consume x402 challenges from an authorized local wallet:
+
+```bash
+npm install -g @solana/pay
+pay setup
+pay --sandbox curl https://your-x402-endpoint.example
+```
+
+The `pay` CLI is an operator tool and is not invoked by the Next.js server. Keep wallet authorization local and never place private keys or wallet credentials in project environment variables.
 
 ## Deploy (Vercel)
 
