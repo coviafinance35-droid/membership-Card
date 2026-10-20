@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { db } from "@/lib/db";
-import { sql } from "drizzle-orm";
+import { createServiceClient } from "@/lib/supabase/server";
 
 const modelIds = [
   "pvccard_white",
@@ -62,10 +61,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const cardSnapshot = { modelId: first.modelId, products: items, reference: reference ?? null };
     const cardNumber = `api-${cardId}`;
 
-    await db.transaction(async (tx) => {
-      await tx.execute(sql`INSERT INTO public.membership_cards (id, public_membership_id, organization_name, member_name, membership_type, design) VALUES (${cardId}::uuid, ${cardNumber}, ${reference ?? accountId}, ${shipTo.name}, ${first.modelId}, ${JSON.stringify(cardSnapshot)}::jsonb)`);
-      await tx.execute(sql`INSERT INTO public.shipment_orders (id, user_id, card_id, card_snapshot, recipient_name, email, phone, street, city, postal_code, country, shipping_cost_cents, total_cents, idempotency_key, payment_status, fulfillment_status) VALUES (${orderId}::uuid, ${accountId}, ${cardId}::uuid, ${JSON.stringify(cardSnapshot)}::jsonb, ${shipTo.name}, ${shipTo.email}, ${shipTo.phone}, ${address.addressLine1}, ${address.city}, ${address.postcode}, ${address.countryCode}, 0, 0, ${idempotencyKey}, ${isDraft ? "draft" : "pending"}, "pending")`);
-    });
+    const supabase = await createServiceClient();
+    const { error: cardError } = await supabase.from("membership_cards").insert({ id: cardId, public_membership_id: cardNumber, organization_name: reference ?? accountId, member_name: shipTo.name, membership_type: first.modelId, design: cardSnapshot });
+    if (cardError) throw cardError;
+    const { error: orderError } = await supabase.from("shipment_orders").insert({ id: orderId, user_id: accountId, card_id: cardId, card_snapshot: cardSnapshot, recipient_name: shipTo.name, email: shipTo.email, phone: shipTo.phone, street: address.addressLine1, city: address.city, postal_code: address.postcode, country: address.countryCode, shipping_cost_cents: 0, total_cents: 0, idempotency_key: idempotencyKey, payment_status: isDraft ? "pending" : "pending", fulfillment_status: "pending" });
+    if (orderError) throw orderError;
 
     return NextResponse.json({ success: true, orderId }, { status: 200 });
   } catch (error) {
