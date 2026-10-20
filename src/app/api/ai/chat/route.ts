@@ -2,6 +2,7 @@ import { randomInt } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { DEFAULT_CARD_DESIGN, type CardDesign } from "@/lib/types";
+import { generateCard, AIProviderError } from "@/lib/ai/providers";
 
 export const runtime = "nodejs";
 type Msg = { role: "user" | "assistant"; content: string };
@@ -27,13 +28,13 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as { messages?: Msg[]; photo_data_url?: string | null };
     messages = Array.isArray(body.messages) ? body.messages.slice(-12) : [];
     photoDataUrl = body.photo_data_url;
-    return NextResponse.json(localCardFlow(messages, photoDataUrl));
+    return NextResponse.json(await localCardFlow(messages, photoDataUrl));
   } catch {
     return NextResponse.json({ ok: false, error: "Please send a valid card creation message." }, { status: 400 });
   }
 }
 
-function localCardFlow(messages: Msg[], photo?: string | null) {
+async function localCardFlow(messages: Msg[], photo?: string | null) {
   const answers = messages.filter((message) => message.role === "user").map((message) => message.content.trim());
   const prompts = [
     "What should appear on the card as the organization or fan club name?",
@@ -43,7 +44,14 @@ function localCardFlow(messages: Msg[], photo?: string | null) {
     "Should the card have an expiration date? Reply with a date like 2027-12-31, or type none.",
   ];
   if (answers.length < 5) return { ok: true, message: { role: "assistant", content: prompts[answers.length] }, card: null };
-  return { ok: true, message: { role: "assistant", content: "AI service is temporarily unavailable, so I created your card from the details you provided." }, card: buildCard({ organization_name: answers[0] || "Membership", member_name: answers[1] || "Member", membership_type: answers[3] || "Member", expiration_date: ["none", "skip", "no"].includes((answers[4] || "none").toLowerCase()) ? null : answers[4], template: "premium", primary_color: DEFAULT_CARD_DESIGN.primary_color, secondary_color: DEFAULT_CARD_DESIGN.secondary_color, accent_color: DEFAULT_CARD_DESIGN.accent_color, text_color: DEFAULT_CARD_DESIGN.text_color }, photo) };
+  const input = { organization_name: answers[0] || "Membership", member_name: answers[1] || "Member", membership_type: answers[3] || "Member", expiration_date: ["none", "skip", "no"].includes((answers[4] || "none").toLowerCase()) ? null : answers[4] };
+  try {
+    const design = await generateCard(input);
+    return { ok: true, message: { role: "assistant", content: "Your membership card is ready." }, card: buildCard(design, photo) };
+  } catch (error) {
+    const message = error instanceof AIProviderError ? error.message : "AI service is temporarily unavailable.";
+    return { ok: true, message: { role: "assistant", content: `${message} I created your card from the details you provided.` }, card: buildCard({ ...input, template: "premium", primary_color: DEFAULT_CARD_DESIGN.primary_color, secondary_color: DEFAULT_CARD_DESIGN.secondary_color, accent_color: DEFAULT_CARD_DESIGN.accent_color, text_color: DEFAULT_CARD_DESIGN.text_color }, photo) };
+  }
 }
 
 function buildCard(args: z.infer<typeof cardSchema>, photo?: string | null) {
