@@ -20,7 +20,6 @@ create table if not exists public.shipping_config (
   international_surcharge_cents integer not null default 0,
   updated_at timestamptz not null default now()
 );
-insert into public.shipping_config (id) values (1) on conflict (id) do nothing;
 
 create table if not exists public.shipment_orders (
   id uuid primary key default gen_random_uuid(),
@@ -48,6 +47,10 @@ create table if not exists public.shipment_orders (
   solana_usd_rate numeric(12,4),
   payment_provider text,
   solana_signature text unique,
+  payment_reference text unique,
+  tx_signature text unique,
+  amount numeric(30,9),
+  token text,
   usdc_amount integer,
   stripe_session_id text unique,
   paid_at timestamptz,
@@ -82,7 +85,13 @@ create table if not exists public.card_designs (
 );
 create index if not exists card_designs_owner_idx on public.card_designs (owner_id, updated_at desc);
 
+alter table public.shipment_orders add column if not exists payment_reference text;
+alter table public.shipment_orders add column if not exists tx_signature text;
+alter table public.shipment_orders add column if not exists amount numeric(30,9);
+alter table public.shipment_orders add column if not exists token text;
 alter table public.shipment_orders add column if not exists usdc_amount integer;
+create unique index if not exists shipment_orders_payment_reference_idx on public.shipment_orders (payment_reference) where payment_reference is not null;
+create unique index if not exists shipment_orders_tx_signature_idx on public.shipment_orders (tx_signature) where tx_signature is not null;
 alter table public.shipment_orders add column if not exists delivery_method text not null default 'standard';
 alter table public.shipment_orders add column if not exists delivery_fee_cents integer not null default 1000;
 alter table public.shipment_orders add column if not exists delivery_window text not null default '2–3 weeks';

@@ -54,6 +54,8 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/OrderItem'
+                payment:
+                  $ref: '#/components/schemas/Payment'
               required: [shipTo]
       responses:
         '200':
@@ -140,6 +142,25 @@ components:
               default: false
             uid:
               type: boolean
+    Payment:
+      type: object
+      properties:
+        paymentReference:
+          type: string
+          description: Unique payment intent reference.
+        txSignature:
+          type: string
+        amount:
+          type: number
+          format: double
+          minimum: 0
+        token:
+          type: string
+          enum: [SOL, USDC]
+        status:
+          type: string
+          enum: [pending, paid, expired]
+      required: [paymentReference, amount, token, status]
     Address:
       type: object
       required: [name, phone, email]

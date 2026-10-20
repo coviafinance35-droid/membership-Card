@@ -9,15 +9,15 @@ Tell us a little about your card — organization name, member name, photo, memb
 1. **Home** — Start Creating
 2. **AI conversation** — asks only what’s needed
 3. **Card ready** — preview, save, share, or order physical
-4. **Physical order** — U.S. address → live shipping rates → Stripe checkout → fulfillment
+4. **Physical order** — U.S. address → live shipping rates → Solana payment → fulfillment
 
-Card delivery now uses Neon for shipment state and an authenticated Stripe webhook for payment-confirmed fulfillment. The mock provider is available only when `FULFILLMENT_PROVIDER=mock` and `FULFILLMENT_TEST_MODE=true`; production requires a real provider adapter.
+Card delivery uses Neon for shipment state and Solana transaction verification before fulfillment. The mock provider is available only when `FULFILLMENT_PROVIDER=mock` and `FULFILLMENT_TEST_MODE=true`; production requires a real provider adapter.
 
 ## Stack
 
 - Next.js 16 (App Router) + TypeScript + Tailwind
 - Groq AI (`llama-3.3-70b-versatile`) with tool calling
-- Stripe Checkout
+- Solana Pay with Helius transaction verification
 - Custom PVC fulfillment provider (`FULFILLMENT_API_URL` + `FULFILLMENT_API_KEY`)
 
 ## Setup
@@ -33,17 +33,17 @@ Without `GROQ_API_KEY`, the create flow still walks the same questions and gener
 ## Shipping environment
 
 - `DATABASE_URL` — Neon connection string
-- `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` — server-side Stripe payment and webhook verification
+- `PAYMENT_PROVIDER=solana` — default on-chain payment flow; set `stripe` only for an optional fiat fallback
+- `HELIUS_API` or `HELIUS_RPC` — server-side Solana mainnet transaction verification
+- `SOLANA_TREASURY` — receiving wallet for card payments
 - `FULFILLMENT_PROVIDER=custom` — required for production fulfillment
 - `FULFILLMENT_API_URL` and `FULFILLMENT_API_KEY` — server-only provider credentials
 - `FULFILLMENT_PROVIDER=mock` plus `FULFILLMENT_TEST_MODE=true` — explicit test-only mode
-- `ADMIN_EMAILS` — comma-separated server-side admin email allowlist
 
-Shipping is priced from the Neon `shipping_config` table; the default is $6.99 domestic and an international surcharge is configurable. A real provider account/API is still required before orders can be submitted to a fulfillment partner.
+Shipping is priced from the configured shipping data; a real fulfillment provider account/API is still required before orders can be submitted.
 
 ## Deploy (Vercel)
 
 1. Import this repo
-2. Set env vars from `.env.example`
-3. Configure the Stripe webhook route at `/api/stripe/webhook`
-4. Deploy
+2. Set env vars from `.env.example`, including the Solana treasury and Helius RPC settings
+3. Deploy

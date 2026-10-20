@@ -67,6 +67,10 @@ model ShipmentOrder {
   solanaUsdRate         Decimal?           @map("solana_usd_rate") @db.Decimal(12, 4)
   paymentProvider       String?            @map("payment_provider")
   solanaSignature       String?            @unique @map("solana_signature")
+  paymentReference      String?            @unique @map("payment_reference")
+  txSignature           String?            @unique @map("tx_signature")
+  amount                Decimal?           @db.Decimal(30, 9)
+  token                 String?
   usdcAmount            Int?               @map("usdc_amount")
   stripeSessionId       String?            @unique @map("stripe_session_id")
   stripePaymentIntentId String?            @map("stripe_payment_intent_id")

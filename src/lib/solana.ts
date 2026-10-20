@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 
-export const SOLANA_TREASURY = "GfoFdkeJiPrYZuCgTLPxgWdWmh8NoB4QCc2CjhLfspFX";
+export const SOLANA_TREASURY = process.env.SOLANA_TREASURY ?? "GfoFdkeJiPrYZuCgTLPxgWdWmh8NoB4QCc2CjhLfspFX";
 export const SOLANA_NETWORK = "mainnet-beta" as const;
 
 export function createSolanaPayUrl(input: { amountSol: number; reference: string; label?: string }) {

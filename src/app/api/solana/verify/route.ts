@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     const requiredLamports = Number(order.solana_amount_lamports);
     if (!Number.isSafeInteger(requiredLamports) || requiredLamports <= 0) return NextResponse.json({ ok: false, error: "Payment intent amount is unavailable." }, { status: 400 });
     if (receivedLamports < requiredLamports) return NextResponse.json({ ok: false, error: "Payment amount is lower than the order total." }, { status: 400 });
-await db.execute(sql`UPDATE public.shipment_orders SET payment_status = 'paid', solana_signature = ${signature}, email = ${email.toLowerCase().trim()}, paid_at = now(), updated_at = now() WHERE id = ${order.id} AND payment_status = 'pending'`);
+await db.execute(sql`UPDATE public.shipment_orders SET payment_status = 'paid', tx_signature = ${signature}, solana_signature = ${signature}, token = 'SOL', email = ${email.toLowerCase().trim()}, paid_at = now(), updated_at = now() WHERE id = ${order.id} AND payment_status = 'pending'`);
   await enqueueFulfillment(order.id);
   return NextResponse.json({ ok: true, paid: true });
   } catch (error) {
