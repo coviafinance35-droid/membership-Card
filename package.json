@@ -40,7 +40,6 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sonner": "^1.7.1",
-    "stripe": "^17.4.0",
     "tailwind-merge": "^2.6.0",
     "zod": "^3.24.0"
   },
