@@ -36,7 +36,9 @@ Without `GROQ_API_KEY`, the create flow still walks the same questions and gener
 - `PAYMENT_PROVIDER=solana` — default on-chain payment flow; set `stripe` only for an optional fiat fallback
 - `HELIUS_API` or `HELIUS_RPC` — server-side Solana mainnet transaction verification
 - `SOLANA_TREASURY` — receiving wallet for card payments
-- `FULFILLMENT_PROVIDER=custom` — required for production fulfillment
+- `FULFILLMENT_PROVIDER=karrio
+KARRIO_API_URL=https://your-karrio-host
+KARRIO_API_KEY=your-karrio-api-key` — required for production fulfillment
 - `FULFILLMENT_API_URL` and `FULFILLMENT_API_KEY` — server-only provider credentials
 - `FULFILLMENT_PROVIDER=mock` plus `FULFILLMENT_TEST_MODE=true` — explicit test-only mode
 
