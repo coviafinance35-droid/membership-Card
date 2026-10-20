@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     const reference = crypto.randomBytes(32).toString("hex");
     const referenceBase58 = new PublicKey(Buffer.from(reference, "hex")).toBase58();
     const url = createSolanaPayUrl({ amountSol: amountLamports / 1_000_000_000, reference: referenceBase58 });
-    await db.execute(sql`UPDATE public.shipment_orders SET payment_provider = 'solana', solana_reference = ${referenceBase58}, solana_amount_lamports = ${amountLamports}, solana_usd_rate = ${price}, updated_at = now() WHERE id = ${shipment.id} AND payment_status = 'pending'`);
+    await db.execute(sql`UPDATE public.shipment_orders SET payment_provider = 'solana', payment_reference = ${referenceBase58}, solana_reference = ${referenceBase58}, amount = ${amountSol}, token = 'SOL', solana_amount_lamports = ${amountLamports}, solana_usd_rate = ${price}, payment_status = 'pending', updated_at = now() WHERE id = ${shipment.id} AND payment_status = 'pending'`);
     return NextResponse.json({ ok: true, url, reference: referenceBase58, amount_cents: shipment.total_cents, amount_lamports: amountLamports, sol_usd: price, network: "mainnet-beta" });
   } catch (error) {
     console.error("[solana/create]", error);
