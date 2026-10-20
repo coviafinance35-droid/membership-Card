@@ -15,7 +15,7 @@ Card delivery now uses Neon for shipment state and an authenticated Stripe webho
 
 ## Stack
 
-- Next.js 15 (App Router) + TypeScript + Tailwind
+- Next.js 16 (App Router) + TypeScript + Tailwind
 - Groq AI (`llama-3.3-70b-versatile`) with tool calling
 - Stripe Checkout
 - Custom PVC fulfillment provider (`FULFILLMENT_API_URL` + `FULFILLMENT_API_KEY`)

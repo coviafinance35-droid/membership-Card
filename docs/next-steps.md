@@ -24,7 +24,7 @@ Important notes
 
 Suggested environment variables and configuration to review
 
-- Database: PRISMA_DATABASE_URL_2, PRISMA_DATABASE_URL, POSTGRES_URL, DATABASE_URL
+- Database: `DATABASE_URL` (the single connection string used by Prisma and the application)
 - Supabase: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
 - Solana / Helius: HELIUS_API, HELIUS_RPC, SOLANA_TREASURY (or equivalent treasury address)
 - Fulfillment provider / A&A: FULFILLMENT_PROVIDER, FULFILLMENT_API_URL, FULFILLMENT_API_KEY, PRODIGI_API (if used), FULFILLMENT_TEST_MODE
