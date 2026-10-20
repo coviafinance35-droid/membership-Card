@@ -7,10 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "db:push": "prisma db update --db \"$DATABASE_URL\"",
-    "db:generate": "prisma contract format",
-    "db:validate": "prisma contract format",
-    "db:verify": "prisma db verify --db \"$DATABASE_URL\"",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:validate": "prisma validate",
+    "db:verify": "prisma db execute --stdin",
     "worker": "tsx src/worker.ts"
   },
   "dependencies": {
