@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowLeft, Check, Download, Package, Share2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ArrowLeft, Check, Download, FileDown, Package, Share2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MembershipCard } from "@/components/card/MembershipCard";
@@ -19,28 +19,46 @@ export function CardEditor({ initial }: { initial: CardDraft }) {
   const [savedId, setSavedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
   const theme = themes.find((item) => item.value === card.design.primary_color) ?? themes[0];
 
-  function update(patch: Partial<CardDraft>) { setCard((current) => ({ ...current, ...patch })); setSavedId(null); }
+  function update(patch: Partial<CardDraft>) { setCard((current) => ({ ...current, ...patch })); setSavedId(null); setDirty(true); }
   function updateDesign(primary: string) {
     const next = themes.find((item) => item.value === primary) ?? themes[0];
     update({ design: { ...card.design, primary_color: next.value, secondary_color: next.secondary, accent_color: next.accent, text_color: next.text } });
   }
-  async function save() {
+  const save = useCallback(async () => {
     setSaving(true); setError(null);
     try {
       const response = await fetch("/api/cards/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(card) });
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error(data.error ?? "Unable to save card");
       const saved = { ...card, memberNumber: data.member_number };
-      setCard(saved); setSavedId(data.card_id);
+      setCard(saved); setSavedId(data.card_id); setDirty(false);
       sessionStorage.setItem("mc_card", JSON.stringify(saved));
       sessionStorage.setItem("mc_card_id", data.card_id);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "The card could not be saved. Please try again.");
     }
     finally { setSaving(false); }
+  }, [card]);
+
+  useEffect(() => {
+    if (!dirty) return;
+    const timer = window.setTimeout(() => void save(), 900);
+    return () => window.clearTimeout(timer);
+  }, [dirty, save]);
+
+  function saveToDevice() {
+    const blob = new Blob([JSON.stringify(card, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = `${card.memberNumber || "membership-card"}.json`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
   }
+
   function exportCard() {
     const node = document.querySelector("[data-card-preview]") as HTMLElement | null;
     if (!node) return;
@@ -60,7 +78,7 @@ export function CardEditor({ initial }: { initial: CardDraft }) {
         <div className="mt-6 grid grid-cols-3 gap-3">{themes.map((item) => <button key={item.name} type="button" onClick={() => updateDesign(item.value)} className={`rounded-xl border p-2 text-left ${theme.name === item.name ? "border-primary ring-2 ring-primary/20" : "border-border"}`}><div className="cr80 rounded-lg" style={{ background: item.value }} /><span className="mt-2 block text-center text-xs">{item.name}</span></button>)}</div>
       </section>
       <aside className="space-y-5"><section className="rounded-2xl border bg-card p-5 shadow-soft"><p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Card information</p><div className="mt-4 grid gap-3">{[["Organization", "organizationName", card.organizationName], ["Member name", "memberName", card.memberName], ["Membership level", "membershipType", card.membershipType], ["Membership ID", "memberNumber", card.memberNumber]].map(([label, key, value]) => <label key={key} className="grid gap-1.5 text-sm"><span className="text-muted-foreground">{label}</span><input value={value} onChange={(event) => update({ [key]: event.target.value } as Partial<CardDraft>)} className="h-11 rounded-lg border bg-background px-3 outline-none focus:ring-2 focus:ring-ring" /></label>)}<label className="grid gap-1.5 text-sm"><span className="text-muted-foreground">Expiry date</span><input type="date" value={card.expiration ?? ""} onChange={(event) => update({ expiration: event.target.value })} className="h-11 rounded-lg border bg-background px-3 outline-none focus:ring-2 focus:ring-ring" /></label></div></section>
-        <section className="rounded-2xl border bg-card p-5 shadow-soft"><div className="flex items-center justify-between"><span>Design cost</span><strong>$0.00</strong></div><div className="mt-4 flex items-center justify-between"><span>Digital membership card</span><span className="rounded-full bg-accent px-3 py-1 text-xs text-accent-foreground">Included</span></div><div className="mt-5 grid gap-2"><Button onClick={() => void save()} disabled={saving}>{savedId ? <Check className="size-4" /> : null}{saving ? "Saving…" : savedId ? "Card saved to Neon" : "Save membership card"}</Button><Button variant="outline" onClick={exportCard}><Download className="size-4" /> Export PNG</Button><Button variant="outline" onClick={() => navigator.share?.({ title: "Membership card", text: `${card.memberName} · ${card.memberNumber}` })}><Share2 className="size-4" /> Share card</Button>{savedId && <Button variant="secondary" asChild><Link href="/order"><Package className="size-4" /> Continue to delivery</Link></Button>}</div>{error && <p className="mt-3 text-sm text-destructive">{error}</p>}</section></aside>
+        <section className="rounded-2xl border bg-card p-5 shadow-soft"><div className="flex items-center justify-between"><span>Design cost</span><strong>$0.00</strong></div><div className="mt-4 flex items-center justify-between"><span>Digital membership card</span><span className="rounded-full bg-accent px-3 py-1 text-xs text-accent-foreground">Included</span></div><div className="mt-5 grid gap-2"><Button onClick={() => void save()} disabled={saving}>{savedId ? <Check className="size-4" /> : null}{saving ? "Saving…" : savedId ? "Card saved to Neon" : "Save membership card"}</Button><Button variant="outline" onClick={saveToDevice}><FileDown className="size-4" /> Save to device</Button><Button variant="outline" onClick={exportCard}><Download className="size-4" /> Export PNG</Button><Button variant="outline" onClick={() => navigator.share?.({ title: "Membership card", text: `${card.memberName} · ${card.memberNumber}` })}><Share2 className="size-4" /> Share card</Button>{savedId && <Button variant="secondary" asChild><Link href="/order"><Package className="size-4" /> Continue to delivery</Link></Button>}</div>{error && <p className="mt-3 text-sm text-destructive">{error}</p>}</section></aside>
     </div>
   </main>;
 }
