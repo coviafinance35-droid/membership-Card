@@ -50,7 +50,7 @@ async function localCardFlow(messages: Msg[], photo?: string | null) {
     return { ok: true, message: { role: "assistant", content: "Your membership card is ready." }, card: buildCard(design, photo) };
   } catch (error) {
     const message = error instanceof AIProviderError ? error.message : "AI service is temporarily unavailable.";
-    return { ok: true, message: { role: "assistant", content: `${message} I created your card from the details you provided.` }, card: buildCard({ ...input, template: "premium", primary_color: DEFAULT_CARD_DESIGN.primary_color, secondary_color: DEFAULT_CARD_DESIGN.secondary_color, accent_color: DEFAULT_CARD_DESIGN.accent_color, text_color: DEFAULT_CARD_DESIGN.text_color }, photo) };
+    return { ok: false, message: { role: "assistant", content: `${message} No card was created. Please try again when the AI service is available.` }, card: null };
   }
 }
 
