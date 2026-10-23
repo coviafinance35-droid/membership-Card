@@ -17,7 +17,7 @@ export const shippingSchema = z.object({
 
 export type ShippingInput = z.infer<typeof shippingSchema>;
 export const SHIPPING_SERVICES = {
-  standard: { label: "Standard Delivery", description: "Estimated 2–3 weeks", amount_cents: 1000, estimated_days: 21, window: "2–3 weeks" },
+  standard: { label: "Standard Delivery", description: "Estimated 2–3 weeks", amount_cents: 1400, estimated_days: 21, window: "2–3 weeks" },
   rush: { label: "Express Delivery", description: "Estimated 24–48 hours", amount_cents: 1800, estimated_days: 2, window: "24–48 hours" },
 } as const;
 export type ShippingService = keyof typeof SHIPPING_SERVICES;
