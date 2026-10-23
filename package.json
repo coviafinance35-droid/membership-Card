@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
-    "db:validate": "prisma validate",
-    "db:verify": "prisma db execute --stdin",
+    "db:validate": "prisma contract format",
+    "db:verify": "prisma db verify",
     "worker": "tsx src/worker.ts"
   },
   "dependencies": {
